@@ -16,13 +16,13 @@ type State struct {
 	active string
 	confirmed string
 	death string
+	last_updated_time string
 }
 func(h *Handler) GetCasesFromGeoLocation(c echo.Context)(err error) {
 
 	fmt.Printf(c.QueryParam("latitude"))
 	fmt.Printf(c.QueryParam("longitude"))
 
-	geocoder.ApiKey = "AIzaSyDWuVvU0FT_UPX3Gjix27QbJbo4zEuf26c"
 
 	f1, err := strconv.ParseFloat(c.QueryParam("latitude"),8)
 	f2, err := strconv.ParseFloat(c.QueryParam("longitude"),8)
