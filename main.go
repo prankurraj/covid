@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/labstack/echo"
-	"github.com/covid/src/example.com/handler"
+	"github.com/covid/src/handler"
 	"fmt"
 	"github.com/labstack/echo/middleware"
 	"go.mongodb.org/mongo-driver/mongo/options"
