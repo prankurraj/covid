@@ -99,9 +99,9 @@ func(h *Handler) Covid(c echo.Context)(err error) {
 	json.Unmarshal(body, &responseObject)
 
 	collection := h.DB.Collection("state")
-
+	collection.Drop(context.TODO())
 	for _, elem := range responseObject.Statewise {
-		res, insertErr := collection.(context.TODO(), bson.M{
+		res, insertErr := collection.InsertOne(context.TODO(), bson.M{
 			"active":elem.Active, "state":elem.State, "_id":elem.Statecode, "confirmed":elem.Confirmed, "death":elem.Deaths,"last_update_time":elem.Lastupdatedtime})
 		if insertErr != nil {
 			log.Fatal(insertErr)
