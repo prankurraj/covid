@@ -6,6 +6,9 @@ import (
 	"io/ioutil"
 	"github.com/labstack/echo"
 	"encoding/json"
+	"fmt"
+	"context"
+	"gopkg.in/mgo.v2/bson"
 )
 type Response struct {
 	CasesTimeSeries []struct {
@@ -19,18 +22,18 @@ type Response struct {
 		Totalrecovered string `json:"totalrecovered"`
 	} `json:"cases_time_series"`
 	Statewise []struct {
-		Active          string `json:"active"`
-		Confirmed       string `json:"confirmed"`
-		Deaths          string `json:"deaths"`
-		Deltaconfirmed  string `json:"deltaconfirmed"`
-		Deltadeaths     string `json:"deltadeaths"`
-		Deltarecovered  string `json:"deltarecovered"`
-		Lastupdatedtime string `json:"lastupdatedtime"`
-		Migratedother   string `json:"migratedother"`
-		Recovered       string `json:"recovered"`
-		State           string `json:"state"`
-		Statecode       string `json:"statecode"`
-		Statenotes      string `json:"statenotes"`
+		Active          string `json:"active" bson:"active"`
+		Confirmed       string `json:"confirmed" bson:"confirmed"`
+		Deaths          string `json:"deaths" bson:"deaths"`
+		Deltaconfirmed  string `json:"deltaconfirmed" bson:"deltaconfirmed"`
+		Deltadeaths     string `json:"deltadeaths" bson:"deltadeaths"`
+		Deltarecovered  string `json:"deltarecovered" bson:"deltarecovered"`
+		Lastupdatedtime string `json:"lastupdatedtime" bson:"lastupdatedtime"`
+		Migratedother   string `json:"migratedother" bson:"migratedother"`
+		Recovered       string `json:"recovered" bson:"recovered"`
+		State           string `json:"state" bson:"state"`
+		Statecode       string `json:"statecode" bson:"_id"`
+		Statenotes      string `json:"statenotes" bson:"statenotes"`
 	} `json:"statewise"`
 	Tested []struct {
 		Dailyrtpcrsamplescollectedicmrapplication     string `json:"dailyrtpcrsamplescollectedicmrapplication"`
@@ -79,6 +82,8 @@ type Response struct {
 }
 
 func(h *Handler) Covid(c echo.Context)(err error) {
+
+	fmt.Print("helloosososos")
 	resp, err := http.Get("https://api.covid19india.org/data.json")
 	if err != nil {
 		log.Fatalln(err)
@@ -89,8 +94,23 @@ func(h *Handler) Covid(c echo.Context)(err error) {
 		log.Fatalln(err)
 	}
 
+
+
+
+
 	var responseObject Response
 	json.Unmarshal(body, &responseObject)
+
+	collection := h.DB.Collection("state")
+
+	for _, elem := range responseObject.Statewise {
+		res, insertErr := collection.InsertOne(context.TODO(), bson.M{
+			"active":elem.Active, "state":elem.State, "_id":elem.Statecode, "confirmed":elem.Confirmed, "death":elem.Deaths,"last_update_time":elem.Lastupdatedtime})
+		if insertErr != nil {
+			log.Fatal(insertErr)
+		}
+		fmt.Println(res);
+	}
 
 	//Convert the body to type string
 	sb := string(body)

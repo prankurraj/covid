@@ -2,26 +2,38 @@ package main
 
 import (
 	"github.com/labstack/echo"
-	"handler"
-	"gopkg.in/mgo.v2"
+	"github.com/covid/src/example.com/handler"
+	"fmt"
+	"github.com/labstack/echo/middleware"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo"
+	"context"
+	"log"
 )
 
 //main function
 func main() {
-	// create a new echo instance
+	fmt.Printf("hello")
 	e := echo.New()
-	e.Logger.Fatal(e.Start(":8000"))
+	e.Use(middleware.Logger())
 
-	db, err := mgo.Dial("localhost")
+	clientOptions := options.Client().
+		ApplyURI("mongodb+srv://covid:covid@cluster0.v7qux.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+
+	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
-		e.Logger.Fatal(err)
+		log.Fatal(err)
 	}
+	client.Database("covid")
 
-	h := &handler.Handler{DB: db}
+	h := &handler.Handler{DB: client.Database("covid")}
 
 	// Routes
-	e.GET("/feed", h.Covid)
+	e.GET("/refresh", h.Covid)
+	e.GET("/getCases", h.GetCasesFromGeoLocation)
+	e.GET("/getCasesFromState", h.GetCasesFromStateCode)
 
-	// Start server
-	e.Logger.Fatal(e.Start(":1323"))
+
+	e.Logger.Fatal(e.Start(":8000"))
+
 }
